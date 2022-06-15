@@ -1,32 +1,25 @@
-const { release } = require('os');
-const { Pool } = require('pg');
-const config = {
-    user: 'postgres',
-    host: 'localhost',
-    database: 'alwaysmusic_db',
-    password: '1234',
-    port: 5432,
-    max: 20,
-    min: 0, // consultar dejar en 0 o eliminar
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 2000, //consultar valor
-}
+const args = process.argv.slice(2)
+const ingresoNombre = args[1]
+const ingresoRut = args[2]
+const ingresoCurso = args[3]
+const ingresoNivel = args[4]
 
-
-const pool = new Pool(config)
-
-Pool.connect(async(error_conexion, client, release) => {
-    if (error_conexion)
-        return console.error(error_conexion.code)
-
+async function agregar(client, release, pool) {
     const agregar = {
-
-        //name: 'agregarEstudiante',
-        text: 'INSERT INTO estudiantes (nombre, rut, curso, nivel) values ()$1, $2, $3, $4) RETURNING * ;'
-        values:
+        rowMode: 'array',
+        name: 'agregarEstudiante',
+        text: 'INSERT INTO estudiantes (nombre, rut, curso, nivel) values ($1, $2, $3, $4)RETURNING *;',
+        values: [ingresoNombre, ingresoRut, ingresoCurso, ingresoNivel]
     }
+    await client.query(agregar, (errorConsulta, res) => {
+        if (errorConsulta) {
+            console.error('Error en su consulta, vuelva a ingresar datos', errorConsulta.code)
+        } else {
+            console.log('Estudiante agregado con éxito', res.rows[0])
+            release()
+            pool.end()
+        }
+    })
 }
 
-release(); console.log("ultimo registro agregado: ", res.rows[0]); pool.end();
-
-})
+module.exports = agregar

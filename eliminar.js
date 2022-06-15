@@ -1,21 +1,23 @@
-const { Pool } = require('pg');
-const config = {
-    user: 'postgres',
-    host: 'localhost',
-    database: 'alwaysmusic_dbs',
-    password: '1234',
-    port: 5432,
-    max: 20,
-    min: 0, // consultar dejar en 0 o eliminar
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 2000, //consultar valor
+const args = process.argv.slice(2)
+const ingresoRut = args[1]
+
+async function eliminar(client, release, pool) {
+    const eliminar = {
+        rowMode: 'array',
+        name: 'eliminarEstudiante',
+        text: 'DELETE FROM estudiantes WHERE rut = $1 RETURNING *;',
+        values: [ingresoRut]
+    }
+
+    await client.query(eliminar, (errorConsulta, res) => {
+        if (errorConsulta) {
+            console.error('Error al eliminar datos', errorConsulta.code)
+        } else {
+            console.log('El estudiante ha sido eliminado correctamente', res.rows[0])
+            release()
+            pool.end()
+        }
+    })
 }
 
-
-
-
-const Pool = new Pool(config)
-pool.connect((error_conexion, client, release) => {
-
-
-})
+module.exports = eliminar

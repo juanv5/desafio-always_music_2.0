@@ -1,8 +1,11 @@
-//1. Realizar la conexión con PostgreSQL, utilizando la clase Pool y definiendo un
-//máximo de 20 clientes, 5 segundos como tiempo máximo de inactividad de un
-//cliente y 2 segundos de espera de un nuevo cliente.
+const { Pool } = require('pg')
+const args = process.argv.slice(2)
+const agregar = require('./agregar')
+const consultar = require('./consultar')
+const consultarRut = require('./consultarRut')
+const actualizar = require('./actualizar')
+const eliminar = require('./eliminar')
 
-const { Pool } = require('pg');
 const config = {
     user: 'postgres',
     host: 'localhost',
@@ -10,15 +13,53 @@ const config = {
     password: '1234',
     port: 5432,
     max: 20,
-    min: 0, // consultar dejar en 0 o eliminar
+    min: 0,
     idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 2000, //consultar valor
+    connectionTimeoutMillis: 2000,
+}
+const pool = new Pool(config)
+
+const programaComando = args[0]
+
+const programa = async(programa) => {
+    pool.connect(async(errorConexion, client, release) => {
+        if (errorConexion) {
+            console.error(errorConexion.code)
+        } else {
+            if (programa === 'agregar') {
+                agregar(client, release, pool)
+            }
+        }
+        if (errorConexion) {
+            console.error(errorConexion.code)
+        } else {
+            if (programa === 'consultar') {
+                consultar(client, release, pool)
+            }
+        }
+        if (errorConexion) {
+            console.error(errorConexion.code)
+        } else {
+            if (programa === 'consultarRut') {
+                consultarRut(client, release, pool)
+            }
+        }
+        if (errorConexion) {
+            console.error(errorConexion.code)
+        } else {
+            if (programa === 'actualizar') {
+                actualizar(client, release, pool)
+            }
+        }
+        if (errorConexion) {
+            console.error(errorConexion.code)
+        } else {
+            if (programa === 'eliminar') {
+                eliminar(client, release, pool)
+            }
+        }
+
+    })
 }
 
-//2. Hacer todas las consultas con un JSON como argumento definiendo la propiedad
-//name para el Prepared Statement.
-const Pool = new Pool(config)
-pool.connect((error_conexion, client, release) => {
-
-
-})
+programa(programaComando)
